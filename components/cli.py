@@ -80,6 +80,9 @@ class UserInterface(object):
                     "A new Chrome browser will open momentarily",
                     "Please log in to LinkedIn Recruiter",
                     "Return to this console once you have logged in",
+                    " CHROME LOG (Ignore This) ".center(80, "="),
+                    " END CHROME LOG ".center(80, "="),
+                    ""
                     ]
 
         return messages
@@ -126,9 +129,10 @@ class UserInterface(object):
         messages = ["",
                     "Requested {} new tasks".format(n_items),
                     "Received {} tasks from Hermes".format(len(tasks)),
-                    "This number will vary depending on:",
-                    "Your daily profiles views",
-                    "Items you have checked out but not completed"]
+                    "This number may vary depending on:",
+                    "1: Your daily profiles views remaining",
+                    "2: Items you have checked out but not completed",
+                    "3: Remaining items in queue"]
 
         self.console_print(messages)
 
