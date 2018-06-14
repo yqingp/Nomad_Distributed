@@ -111,7 +111,11 @@ class Program(object):
     """
 
     def setup_browser(self):
+        print("")
+        print(" CHROME LOG (Ignore This) ".center(80, "="))
         self.init_browser(start_page="https://www.linkedin.com/recruiter")
+        print(" END CHROME LOG ".center(80, "="))
+        print("")
 
     def do_task(self):
         if not self.tasks:

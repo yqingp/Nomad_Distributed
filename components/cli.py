@@ -80,8 +80,6 @@ class UserInterface(object):
                     "A new Chrome browser will open momentarily",
                     "Please log in to LinkedIn Recruiter",
                     "Return to this console once you have logged in",
-                    " CHROME LOG (Ignore This) ".center(80, "="),
-                    " END CHROME LOG ".center(80, "="),
                     ""
                     ]
 
