@@ -146,7 +146,6 @@ try:
                 nomad_dist.browser.driver.quit()
             except AttributeError:
                 pass
-            nomad_dist.tasks_complete()
             tasking = False
             break
         nomad_dist.checkin_task(task[0], task[1])
@@ -155,6 +154,7 @@ except Exception as e:
 finally:
     nomad_dist.tasks_complete()
     nomad_dist.browser.driver.quit()
+    print("You may now close this window... Goodbye!")
 
 
 

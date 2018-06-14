@@ -165,8 +165,8 @@ class UserInterface(object):
     @property
     def close_app_(self):
 
-        messages = ["{} exiting in {}".format(self.name, i) for i in range(3)]
-        return messages
+        messages = ["{} exiting in {}".format(self.name, i) for i in range(1, 4)]
+        return list(reversed(messages)) # Countdown not up
 
     def close_app(self):
         self.console_print(self.close_app_)
