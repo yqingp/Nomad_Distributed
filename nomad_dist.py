@@ -1,15 +1,12 @@
-import inspect
-import os
 from components import HermesConnection, UserInterface, NomadDriver
 
 
 class Program(object):
 
-    def __init__(self, browser, ui, network, driver_path, debug):
+    def __init__(self, browser, ui, network, debug):
         self.browser = browser
         self.ui = ui
         self.network = network
-        self.driver_path = driver_path
         self.debug = debug
         self.tasks = None
         if debug:
@@ -25,13 +22,6 @@ class Program(object):
 
     def init_network(self, *args, **kwargs):
         self.network = self.network(*args, **kwargs)
-
-    @staticmethod
-    def get_chromedriver_path():
-        # Get CWD and pass chromedriver to PATH env variable
-        current_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
-        path_to_chromedriver = os.path.join(current_folder, 'chromedriver.exe')
-        return path_to_chromedriver
 
     # Order of Operations
     # UI - Welcome - welcome()
@@ -121,7 +111,7 @@ class Program(object):
     """
 
     def setup_browser(self):
-        self.init_browser(service_path=self.driver_path, start_page="https://www.linkedin.com/recruiter")
+        self.init_browser(start_page="https://www.linkedin.com/recruiter")
 
     def do_task(self):
         if not self.tasks:
@@ -133,10 +123,7 @@ class Program(object):
         return new_task, task_data
 
 
-chrome_path = Program.get_chromedriver_path()
-
-nomad_dist = Program(browser=NomadDriver, ui=UserInterface, network=HermesConnection, driver_path=chrome_path,
-                     debug=False)
+nomad_dist = Program(browser=NomadDriver, ui=UserInterface, network=HermesConnection, debug=False)
 try:
     nomad_dist.welcome()
     nomad_dist.setup_network()
