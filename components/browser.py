@@ -1,7 +1,9 @@
 import re
 import json
 import os
+import inspect
 import time
+from app_config import Config
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -22,20 +24,26 @@ class PageStatusReady(object):
 
 class NomadDriver(object):
 
-    def __init__(self, service_path, start_page=None):
-        self.service_path = service_path
+    def __init__(self, start_page=None):
         self.service = self.start_service()
         self.driver = self.start_driver(start_page)
         self.wait = WebDriverWait(self.driver, 60)
 
+    def get_chromedriver_path(self):
+        CHROME_PATH = Config.CHROME_PATH
+        return CHROME_PATH
+
     def start_service(self):
+        service_path = self.get_chromedriver_path()
+        print(service_path)
         service = webdriver.chrome.service.Service(
-            os.path.abspath(self.service_path))
+            os.path.abspath(service_path))
         service.start()
         return service
 
     def start_driver(self, start_page):
-        driver = webdriver.Chrome(os.path.abspath(self.service_path))
+        service_path = self.get_chromedriver_path()
+        driver = webdriver.Chrome(service_path)
         if start_page:
             driver.get(start_page)
         return driver
