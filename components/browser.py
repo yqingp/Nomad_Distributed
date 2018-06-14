@@ -35,7 +35,6 @@ class NomadDriver(object):
 
     def start_service(self):
         service_path = self.get_chromedriver_path()
-        print(service_path)
         service = webdriver.chrome.service.Service(
             os.path.abspath(service_path))
         service.start()
