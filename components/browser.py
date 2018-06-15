@@ -40,9 +40,8 @@ class ElementExistsWithAttribute(object):
         self.attribute_pattern = re.compile(attribute_pattern)
 
     def __call__(self, driver):
-        try:
-            element = driver.find_element(*self.locator)
-        except:
+        element = driver.find_element(*self.locator)
+        if not element:
             return False
         element_attr = element.get_property(self.attribute)
         if not element_attr:
