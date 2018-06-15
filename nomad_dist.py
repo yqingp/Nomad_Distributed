@@ -158,10 +158,6 @@ try:
     tasking = True
     while tasking is True:
         if not nomad_dist.tasks:
-            try:
-                nomad_dist.browser.shutdown()
-            except AttributeError:
-                pass
             tasking = False
             break
         time.sleep(nomad_dist.sleep_between)
