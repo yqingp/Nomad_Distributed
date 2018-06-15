@@ -1,15 +1,24 @@
-import re
 import json
-import os
+from json.decoder import JSONDecodeError
 import re
 import time
 from app_config import Config
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException, WebDriverException
 
 
 class ElementNotFound(Exception):
+
+    def __init__(self, message, url):
+
+        super().__init__(message)
+
+        self.url = url
+
+
+class PageNotAvailable(Exception):
 
     def __init__(self, message, url):
 
@@ -40,7 +49,7 @@ class ElementExistsWithAttribute(object):
         self.attribute_pattern = re.compile(attribute_pattern)
 
     def __call__(self, driver):
-        element = driver.find_element(*self.locator)
+        element = driver.find_element(*self.locator)  # Unpacking a tuple like (By.CSS_SELECTOR, ".class_name")
         if not element:
             return False
         element_attr = element.get_property(self.attribute)
@@ -52,12 +61,11 @@ class ElementExistsWithAttribute(object):
             return False
 
 
-class NomadDriver(object):
+class PageConditions(object):
 
-    def __init__(self, start_page=None, attr_pattern=None, locator=None):
-        self.service = self.start_service()
-        self.driver = self.start_driver(start_page)
-        self.wait = WebDriverWait(self.driver, 60)
+    def __init__(self, attr=None, attr_pattern=None, locator=None):
+        if not attr:
+            self.attr = 'href'
         if not attr_pattern:
             self.attr_pattern = r"https://www.linkedin.com/recruiter/profile/[0-9]{5,15},"
         else:
@@ -67,58 +75,103 @@ class NomadDriver(object):
         else:
             self.locator = locator
 
-    def get_chromedriver_path(self):
-        CHROME_PATH = Config.CHROME_PATH
-        return CHROME_PATH
+    @staticmethod
+    def check_page_invalid(url, requested_url):
+        if 'unavailable' in url.lower():
+            raise PageNotAvailable("Page {} is unavailable or invalid".format(requested_url), requested_url)
+        else:
+            return False
+
+    def wait_for_target(self, driver, wait):
+        try:
+            wait.until(ElementExistsWithAttribute(self.locator, 'href', self.attr_pattern))
+        except TimeoutError:
+            ElementNotFound("Target Element Does Not Exist", driver.current_url)
+
+
+class NomadDriver(object):
+
+    def __init__(self, page_conditions=PageConditions(), start_page=None, service_path=Config.CHROME_PATH):
+        self.service_path = service_path
+        self.service = self.start_service()
+        self.driver = self.start_driver(start_page)
+        self.wait = WebDriverWait(self.driver, 60)
+        self.page_conditions = page_conditions
 
     def start_service(self):
-        service_path = self.get_chromedriver_path()
-        service = webdriver.chrome.service.Service(
-            os.path.abspath(service_path))
+        service = webdriver.chrome.service.Service(self.service_path)
         service.start()
         return service
 
     def start_driver(self, start_page):
-        service_path = self.get_chromedriver_path()
-        driver = webdriver.Chrome(service_path)
+        driver = webdriver.Chrome(self.service_path)
         if start_page:
             driver.get(start_page)
         return driver
+
+    def maximize_window(self):
+        if self.driver:
+            self.driver.maximize_window()
+
+    def shutdown(self):
+        if self.driver:
+            self.driver.close()
+            self.driver.quit()
+        if self.service:
+            self.service.stop()
 
     def go_to_page(self, url):
         try:
             self.driver.get(url)
             page_ready = self.wait.until(PageStatusReady())
             return page_ready
-        except:
+        except TimeoutException:
             raise ElementNotFound("Page Not Ready for URL {}".format(url), url)
 
     def get_page_link(self, url):
         try:
-            page_link_element = self.wait.until(
-                ElementExistsWithAttribute(
-                    locator=self.locator, attribute='href', attribute_pattern=self.attr_pattern
-                ))
-
-            if not page_link_element:
-                raise ElementNotFound("Target Element Does Not Exist", url)
-
+            self.page_conditions.wait_for_target(self.driver, self.wait)
+        except ElementNotFound as e:
+            print(e)
+            return False, e.url
+        try:
             page_link = self.driver.execute_script(
                 "return document.querySelector(\"a[data-control-name='view_profile_in_recruiter']\").href")
-            return page_link
-        except:
-            raise ElementNotFound("Target Element Does Not Exist", url)
+        except WebDriverException as e:
+            print(e)
+            return False, url
+        return True, page_link
 
     def do_task(self, url):
-        page = self.go_to_page(url)
-        if not page:
-            return False
-        page_link = self.get_page_link(url)
-        if not page_link:
-            return False
-        raw_response = self.fetch_ajax(page_link)
-        json_response = self.to_json(raw_response)
-        return json_response
+        try:
+            self.go_to_page(url)
+        except ElementNotFound as e:  # Page never shows pageStatus == 'complete'
+            print(e)
+            return False, e.url
+
+        # Handle occurrences of LinkedIn redirecting to 'https://www.linkedin.com/in/unavailable'
+        try:
+            self.page_conditions.check_page_invalid(self.driver.current_url, url)
+        except PageNotAvailable as e:
+            print(e)
+            return False, e.url
+
+        success_flag_page_link, page_link = self.get_page_link(url)
+
+        if not success_flag_page_link:
+            return False, url
+
+        success_flag_raw_response, raw_response = self.fetch_ajax(page_link)
+
+        if not success_flag_raw_response:
+            return False, url
+
+        success_flag_json_response, json_response = self.to_json(raw_response)
+
+        if not success_flag_json_response:
+            return False, url
+
+        return True, json_response
 
 
     @property
@@ -128,13 +181,22 @@ class NomadDriver(object):
         return code_search
 
     def fetch_ajax(self, url):
-        response = self.driver.execute_script(self.generate_script(url))
-        return response
+        try:
+            response = self.driver.execute_script(self.generate_script(url))
+            return True, response
+        except WebDriverException:
+            return False, None
 
     def to_json(self, response):
-        data_start = self.data_search_re.split(response)[1]
+        try:
+            data_start = self.data_search_re.split(response)[1]
+        except IndexError:
+            return False, None
         data = data_start.split("--></code>")[0]
-        return json.loads(data)
+        try:
+            return True, json.loads(data)
+        except JSONDecodeError:
+            return False, None
 
     @staticmethod
     def generate_script(page_link):

@@ -1,6 +1,6 @@
 from components import HermesConnection, UserInterface, NomadDriver, ElementNotFound
 from queue import deque
-
+import time
 
 class Program(object):
 
@@ -11,6 +11,9 @@ class Program(object):
         self.debug = debug
         self.tasks = None
         self.memos = {}
+        self.max_retries = 2
+        self.give_ups = []
+        self.sleep_between = 2
         if debug:
             self.init_ui("Nomad - Distributed Edition - DEBUG", print_delay=0)
         else:
@@ -120,25 +123,24 @@ class Program(object):
         print(" END CHROME LOG ".center(80, "="))
         print("")
 
+    def handle_error(self, task):
+        current_count = self.memos.get(task['id'], 0)
+        current_count += 1
+        self.memos.update({task['id']: current_count})
+        if current_count >= self.max_retries:
+            self.give_ups.append(task)
+        else:
+            self.tasks.appendleft(task)
+
     def do_task(self):
-        if not self.tasks:
-            return False
         new_task = self.tasks.pop()
         url = new_task['item_data']
-        try:
-            task_data = self.browser.do_task(url)
-        except ElementNotFound as e:
-            print(e)
-            # Update memos with + 1 error
-            current_count = self.memos.get(new_task['id'], 0)
-            current_count += 1
-            self.memos.update({new_task['id']: current_count})
-            # Return to deque
-            self.tasks.appendleft(new_task)
-            return True, True
-        # TODO handle false
+        task_success, task_data = self.browser.do_task(url)
+        if not task_success:
+            self.handle_error(new_task)
+            return task_success, new_task, task_data
         self.ui.finished_one_task(url)
-        return new_task, task_data
+        return task_success, new_task, task_data
 
 
 nomad_dist = Program(browser=NomadDriver, ui=UserInterface, network=HermesConnection, debug=False)
@@ -152,22 +154,25 @@ try:
     nomad_dist.explain_browser_login()
     nomad_dist.setup_browser()
     nomad_dist.await_login_confirmed()
+    nomad_dist.browser.maximize_window()
     tasking = True
     while tasking is True:
-        task = nomad_dist.do_task()
-        if not task:
+        if not nomad_dist.tasks:
             try:
-                nomad_dist.browser.driver.quit()
+                nomad_dist.browser.shutdown()
             except AttributeError:
                 pass
             tasking = False
             break
-        nomad_dist.checkin_task(task[0], task[1])
+        time.sleep(nomad_dist.sleep_between)
+        task_success, task, task_data = nomad_dist.do_task()
+        if task_success:
+            nomad_dist.checkin_task(task, task_data)
 except Exception as e:
     print(e)
 finally:
     nomad_dist.tasks_complete()
-    nomad_dist.browser.driver.quit()
+    nomad_dist.browser.shutdown()
     print("You may now close this window... Goodbye!")
 
 
