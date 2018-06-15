@@ -12,7 +12,6 @@ class Program(object):
         self.tasks = None
         self.memos = {}
         self.max_retries = 2
-        self.give_ups = []
         self.sleep_between = 2
         if debug:
             self.init_ui("Nomad - Distributed Edition - DEBUG", print_delay=0)
@@ -128,7 +127,8 @@ class Program(object):
         current_count += 1
         self.memos.update({task['id']: current_count})
         if current_count >= self.max_retries:
-            self.give_ups.append(task)
+            self.network.checkin_item_failure(task, current_count)
+            print("Giving up on {} - it appears to be a bad URL".format(task['item_data']))
         else:
             self.tasks.appendleft(task)
 

@@ -51,3 +51,7 @@ class HermesConnection(object):
     def checkin_item(self, item_id, profile_data):
         data = {'item_id': item_id, 'data': profile_data}
         self.s.post(self.base_url.format("/api/v2/queue/complete"), json=data)
+
+    def checkin_item_failure(self, item, n_attempts):
+        data = {'item_id': item['id'], 'attempts': n_attempts}
+        self.s.post(self.base_url.format("/api/v2/queue/invalid"), json=data)
