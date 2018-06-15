@@ -1,4 +1,5 @@
-from components import HermesConnection, UserInterface, NomadDriver
+from components import HermesConnection, UserInterface, NomadDriver, ElementNotFound
+from queue import deque
 
 
 class Program(object):
@@ -9,10 +10,11 @@ class Program(object):
         self.network = network
         self.debug = debug
         self.tasks = None
+        self.memos = {}
         if debug:
             self.init_ui("Nomad - Distributed Edition - DEBUG", print_delay=0)
         else:
-            self.init_ui("Nomad - Distributed Edition", print_delay=2)
+            self.init_ui("Nomad - Distributed Edition", print_delay=1)
 
     def init_browser(self, *args, **kwargs):
         self.browser = self.browser(*args, **kwargs)
@@ -98,7 +100,8 @@ class Program(object):
     def fetch_tasks(self, n_items):
         tasks = self.network.checkout_items(n_items, self.ui.queue_id)
         # Dict with keys ['id', 'queue_id', 'item_data']
-        self.tasks = tasks
+        self.tasks = deque(tasks)
+        self.memos = {task['id']: 0 for task in tasks}  # Tallying errors
         self.ui.show_items_received(n_items, tasks)
 
     def checkin_task(self, task, task_data):
@@ -122,7 +125,18 @@ class Program(object):
             return False
         new_task = self.tasks.pop()
         url = new_task['item_data']
-        task_data = self.browser.do_task(url)
+        try:
+            task_data = self.browser.do_task(url)
+        except ElementNotFound as e:
+            print(e)
+            # Update memos with + 1 error
+            current_count = self.memos.get(new_task['id'], 0)
+            current_count += 1
+            self.memos.update({new_task['id']: current_count})
+            # Return to deque
+            self.tasks.appendleft(new_task)
+            return True, True
+        # TODO handle false
         self.ui.finished_one_task(url)
         return new_task, task_data
 
