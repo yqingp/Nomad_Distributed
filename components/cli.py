@@ -104,8 +104,6 @@ class UserInterface(object):
     def await_login_confirmed(self):
         self.console_print(self.await_login_confirmed_)
 
-
-
     @property
     def _prompt_task_count_(self):
 
@@ -159,14 +157,15 @@ class UserInterface(object):
         self.queue_name = selected_queue['friendly_id']
         return selected_queue
 
-    def finished_one_task(self, task):
+    @staticmethod
+    def finished_one_task(task):
         print("Finished {}".format(task))
 
     @property
     def close_app_(self):
 
         messages = ["{} exiting in {}".format(self.name, i) for i in range(1, 4)]
-        return list(reversed(messages)) # Countdown not up
+        return list(reversed(messages))  # Count down, not up
 
     def close_app(self):
         self.console_print(self.close_app_)

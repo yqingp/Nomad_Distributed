@@ -2,6 +2,7 @@ from components import HermesConnection, UserInterface, NomadDriver, ElementNotF
 from queue import deque
 import time
 
+
 class Program(object):
 
     def __init__(self, browser, ui, network, debug):

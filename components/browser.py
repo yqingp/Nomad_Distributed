@@ -8,6 +8,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException, WebDriverException
 
+"""
+Custom Exceptions
+"""
+
 
 class ElementNotFound(Exception):
 
@@ -27,7 +31,21 @@ class PageNotAvailable(Exception):
         self.url = url
 
 
+"""
+Custom Selenium Waits
+"""
+
+
 class PageStatusReady(object):
+
+    """
+    A very simple Wait condition
+
+    Executes JavaScript script that returns document.readyState
+
+    :returns: True if 'complete', else False
+
+    """
 
     def __init__(self):
         pass
@@ -42,6 +60,15 @@ class PageStatusReady(object):
 
 
 class ElementExistsWithAttribute(object):
+
+    """
+    A Wait condition that tests:
+        - Element exists
+        - Element has attribute
+        - Attribute matches attribute_pattern
+
+    :returns: True if all conditions met, False if not
+    """
 
     def __init__(self, locator, attribute, attribute_pattern):
         self.locator = locator
