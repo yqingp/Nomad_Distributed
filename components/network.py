@@ -16,8 +16,6 @@ class HermesConnection(object):
         else:
             self.base_url = self.url
         self.api_token = None
-        self.available_queues = []
-        self.active_queue = None
 
     def get_api_token(self):
         auth_header_val = "{}:{}".format(self.username, self.password)
@@ -32,6 +30,25 @@ class HermesConnection(object):
         self.s.headers.pop('Authorization')
         self.s.headers.update({'Api-Key': token})
         return True
+
+
+class LocalHermesConnection(HermesConnection):
+
+    def __init__(self, username, password, items, debug=False):
+        super().__init__(username, password, debug)
+        self.items = items
+        self.get_api_token()
+
+    def checkin_item(self, profile_data):
+        self.s.post(self.base_url.format("/api/v1/profiles"), json=profile_data)
+
+
+class DistributedHermesConnection(HermesConnection):
+
+    def __init__(self, username, password, debug=False):
+        super().__init__(username, password, debug)
+        self.available_queues = []
+        self.active_queue = None
 
     def get_queues(self):
         available_queues = self.s.get(self.base_url.format("/api/v2/queue/list")).json()['queues']

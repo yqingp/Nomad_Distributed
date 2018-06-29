@@ -1,6 +1,7 @@
 altgraph==0.15
 certifi==2018.4.16
 chardet==3.0.4
+easygui==0.98.1
 future==0.16.0
 idna==2.7
 macholib==1.9

@@ -1,4 +1,4 @@
-from components import HermesConnection, UserInterface, NomadDriver, ElementNotFound
+from components import DistributedHermesConnection, UserInterface, NomadDriver
 from queue import deque
 import time
 
@@ -144,7 +144,7 @@ class Program(object):
         return task_success, new_task, task_data
 
 
-nomad_dist = Program(browser=NomadDriver, ui=UserInterface, network=HermesConnection, debug=False)
+nomad_dist = Program(browser=NomadDriver, ui=UserInterface, network=DistributedHermesConnection, debug=False)
 try:
     nomad_dist.welcome()
     nomad_dist.setup_network()
