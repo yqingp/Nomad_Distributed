@@ -1,4 +1,7 @@
-from components import DistributedHermesConnection, UserInterface, NomadDriver
+from components.cli import UserInterface
+from components.browser import NomadDriver
+from components.network import DistributedHermesConnection
+from distributed.app_config import Config
 from queue import deque
 import time
 
@@ -119,7 +122,7 @@ class Program(object):
     def setup_browser(self):
         print("")
         print(" CHROME LOG (Ignore This) ".center(80, "="))
-        self.init_browser(start_page="https://www.linkedin.com/recruiter")
+        self.init_browser(service_path=Config.CHROME_PATH, start_page="https://www.linkedin.com/recruiter")
         print(" END CHROME LOG ".center(80, "="))
         print("")
 

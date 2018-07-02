@@ -2,7 +2,6 @@ import json
 from json.decoder import JSONDecodeError
 import re
 import time
-from distributed.app_config import Config
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -118,7 +117,7 @@ class PageConditions(object):
 
 class NomadDriver(object):
 
-    def __init__(self, page_conditions=PageConditions(), start_page=None, service_path=Config.CHROME_PATH):
+    def __init__(self, service_path, page_conditions=PageConditions(), start_page=None):
         self.service_path = service_path
         self.service = self.start_service()
         self.driver = self.start_driver(start_page)

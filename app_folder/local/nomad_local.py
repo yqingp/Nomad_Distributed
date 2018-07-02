@@ -4,6 +4,7 @@ import sys
 import re
 from components.browser import NomadDriver
 from components.network import LocalHermesConnection
+from local.app_config import Config
 
 
 DEBUG = False
@@ -51,7 +52,7 @@ print("Return to this screen when complete")
 time.sleep(2)
 
 # Start Selenium
-driver = NomadDriver()
+driver = NomadDriver(service_path=Config.CHROME_PATH, start_page="https://www.linkedin.com/recruiter")
 
 # Confirm logged in
 input("Enter any key to continue after logging in ")
