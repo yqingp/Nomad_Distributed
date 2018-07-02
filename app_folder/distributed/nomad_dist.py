@@ -1,4 +1,4 @@
-from app_folder.components import DistributedHermesConnection, UserInterface, NomadDriver
+from components import DistributedHermesConnection, UserInterface, NomadDriver
 from queue import deque
 import time
 

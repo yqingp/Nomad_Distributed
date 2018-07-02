@@ -23,7 +23,7 @@ binaries=[('C:\\Users\\estasney\\PycharmProjects\\Nomad_Distributed\\app_folder\
     1. ` pyinstaller --onefile Nomad_Local.spec nomad_local.py`
     2. `pyinstaller --onefile Nomad_Distributed.spec nomad_dist.py`
     
-4. Include a copy of chromedriver.exe in eahc of the Dist folder
+4. Include a copy of chromedriver.exe in each of the Dist folder
 ```
 \dist
     nomad_dist.exe
