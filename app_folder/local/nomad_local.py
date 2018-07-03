@@ -1,23 +1,31 @@
-import time
-import easygui
-import sys
+import os
 import re
+import sys
+import time
+
+import easygui
+
 from components.browser import NomadDriver
 from components.network import LocalHermesConnection
-from local.app_config import Config
-
 
 DEBUG = False
 SLEEP_TIME = 10
+
+
+def get_chromedriver_path():
+    # Get CWD and pass chromedriver to PATH env variable
+    return os.path.realpath('chromedriver.exe')
 
 
 def do_exit(n_seconds=5, **kwargs):
     countdown = list(reversed([i for i in range(n_seconds)]))
     for i in countdown:
         print("Exiting in {}".format(i))
+        time.sleep(1)
     if 'driver' in kwargs:
         kwargs['driver'].shutdown()
     print("Goodbye".center(80, "="))
+    time.sleep(SLEEP_TIME)
     sys.exit()
 
 
@@ -46,16 +54,24 @@ if not network.api_token:
     print("Error Logging In ...")
     do_exit()
 
-print("A new chrome window will open momentarily")
-print("Please login to LinkedIn Recruiter in this window")
-print("Return to this screen when complete")
-time.sleep(2)
+# Explaining browser open procedures
+for message in ["A new chrome window will open momentarily\n",
+                "Please login to LinkedIn Recruiter\n",
+                "Return to this screen when complete\n"]:
+
+    print(message)
+    time.sleep(1)
 
 # Start Selenium
-driver = NomadDriver(service_path=Config.CHROME_PATH, start_page="https://www.linkedin.com/recruiter")
 
-# Confirm logged in
-input("Enter any key to continue after logging in ")
+print(" CHROME LOG (Ignore This) ".center(80, "="))
+print("")
+driver = NomadDriver(service_path=get_chromedriver_path(), start_page="https://www.linkedin.com/recruiter")
+print(" END CHROME LOG ".center(80, "="))
+print("")
+
+# Confirm logged in, pause thread
+input("Have you logged into LinkedIn Recruiter? [y/n] ")
 
 print("Fetching {} Links".format(len(items_list)))
 
@@ -71,6 +87,3 @@ for task in items_list:
 
 print("ALL DONE!".center(80, "*"))
 do_exit(5, driver=driver)
-
-
-

@@ -5,8 +5,9 @@ block_cipher = None
 
 a = Analysis(['nomad_local.py'],
              pathex=['C:\\Users\\estasney\\PycharmProjects\\Nomad_Distributed\\app_folder\\local'],
-             binaries=[('C:\\Users\\estasney\\PycharmProjects\\Nomad_Distributed\\app_folder\\local\\chromedriver.exe',
-                       '.')],
+             binaries=[
+                 ('C:\\Users\\estasney\\PycharmProjects\\Nomad_Distributed\\app_folder\\local\\chromedriver.exe',
+                  '.')],
              datas=[],
              hiddenimports=[],
              hookspath=[],
@@ -27,4 +28,5 @@ exe = EXE(pyz,
           strip=False,
           upx=True,
           runtime_tmpdir=None,
-          console=True , icon='C:\\Users\\estasney\\PycharmProjects\\Nomad_Distributed\\app.ico')
+          console=True,
+          icon='C:\\Users\\estasney\\PycharmProjects\\Nomad_Distributed\\app.ico')
