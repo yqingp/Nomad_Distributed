@@ -18,7 +18,7 @@ class Program(object):
         self.tasks = None
         self.memos = {}
         self.max_retries = 2
-        self.sleep_between = 5
+        self.sleep_between = 10
         if debug:
             self.init_ui("Nomad - Distributed Edition - DEBUG", print_delay=0)
         else:
