@@ -5,6 +5,7 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException, WebDriverException
 
 """
@@ -124,13 +125,20 @@ class NomadDriver(object):
         self.wait = WebDriverWait(self.driver, 60)
         self.page_conditions = page_conditions
 
+    @property
+    def driver_options(self):
+        chrome_options = Options()
+        chrome_options.add_argument("--disable-background-timer-throttling")
+        chrome_options.add_argument("--disable-renderer-backgrounding")
+        return chrome_options
+
     def start_service(self):
         service = webdriver.chrome.service.Service(self.service_path)
         service.start()
         return service
 
     def start_driver(self, start_page):
-        driver = webdriver.Chrome(self.service_path)
+        driver = webdriver.Chrome(executable_path=self.service_path, chrome_options=self.driver_options)
         if start_page:
             driver.get(start_page)
         return driver
