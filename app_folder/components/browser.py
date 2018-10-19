@@ -94,7 +94,7 @@ class PageConditions(object):
         if not attr:
             self.attr = 'href'
         if not attr_pattern:
-            self.attr_pattern = r"https://www.linkedin.com/recruiter/profile/[0-9]{5,15},"
+            self.attr_pattern = r"https://www.linkedin.com/recruiter/profile/[0-9]{3,15},"
         else:
             self.attr_pattern = attr_pattern
         if not locator:
@@ -113,7 +113,8 @@ class PageConditions(object):
         try:
             wait.until(ElementExistsWithAttribute(self.locator, 'href', self.attr_pattern))
         except TimeoutException:
-            raise ElementNotFound("Target Element Does Not Exist", driver.current_url)
+            raise ElementNotFound("Element {} not found on page {}".format(self.locator, driver.current_url),
+                                  driver.current_url)
 
 
 class NomadDriver(object):
@@ -122,7 +123,7 @@ class NomadDriver(object):
         self.service_path = service_path
         self.service = self.start_service()
         self.driver = self.start_driver(start_page)
-        self.wait = WebDriverWait(self.driver, 60)
+        self.wait = WebDriverWait(self.driver, 20)
         self.page_conditions = page_conditions
 
     @property
