@@ -112,8 +112,8 @@ class PageConditions(object):
     def wait_for_target(self, driver, wait):
         try:
             wait.until(ElementExistsWithAttribute(self.locator, 'href', self.attr_pattern))
-        except TimeoutError:
-            ElementNotFound("Target Element Does Not Exist", driver.current_url)
+        except TimeoutException:
+            raise ElementNotFound("Target Element Does Not Exist", driver.current_url)
 
 
 class NomadDriver(object):
